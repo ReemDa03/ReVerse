@@ -1,0 +1,14 @@
+.choice-button {
+  padding: 8px 12px;
+  margin: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.choice-button.selected {
+  border-color: blue;
+}
+
+.choice-button.error-border {
+  border-color: red;
+}
