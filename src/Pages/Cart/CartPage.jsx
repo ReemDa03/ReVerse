@@ -11,11 +11,20 @@ import {
 import { useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { motion, AnimatePresence } from "framer-motion";
+
+import CartItem from "./CartItem";
+import CartDetails from "./CartDetails";
+import InsideForm from "./InsideForm";
+import DeliveryForm from "./DeliveryForm";
+import PaymentModal from "./PaymentModal";
+import { useTranslation } from "react-i18next"; // فوق في الكومبوننت
 
 const CartPage = () => {
+  const { t } = useTranslation();
+
   const { cartItems, addToCart, removeFromCart, clearCart } =
     useContext(StoreContext);
-
   const [productsData, setProductsData] = useState({});
   const [loading, setLoading] = useState(true);
   const [dineOption, setDineOption] = useState(null);
@@ -33,36 +42,28 @@ const CartPage = () => {
 
   // ✅ تحميل بيانات المنتجات
   useEffect(() => {
-  const fetchData = async () => {
-    const productMap = {};
-
-    for (const key in cartItems) {
-      const item = cartItems[key];
-
-      // ✅ تأكد من وجود item.id
-      if (!item || !item.id) continue;
-
-      // ✅ نحدد اسم الكوليكشن بشكل آمن
-      const collectionName =
-        typeof item.collection === "string" ? item.collection : "products";
-
-      try {
-        const docRef = doc(db, "ReVerse", slug, collectionName, item.id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          productMap[item.id] = { id: docSnap.id, ...docSnap.data() };
+    const fetchData = async () => {
+      const productMap = {};
+      for (const key in cartItems) {
+        const item = cartItems[key];
+        if (!item || !item.id) continue;
+        const collectionName =
+          typeof item.collection === "string" ? item.collection : "products";
+        try {
+          const docRef = doc(db, "ReVerse", slug, collectionName, item.id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            productMap[item.id] = { id: docSnap.id, ...docSnap.data() };
+          }
+        } catch (err) {
+          console.error("Error fetching product:", err);
         }
-      } catch (err) {
-        console.error("Error fetching product:", err);
       }
-    }
-
-    setProductsData(productMap);
-    setLoading(false);
-  };
-
-  fetchData();
-}, [cartItems, slug]);
+      setProductsData(productMap);
+      setLoading(false);
+    };
+    fetchData();
+  }, [cartItems, slug]);
 
   // ✅ تحميل بيانات المطعم
   useEffect(() => {
@@ -101,6 +102,7 @@ const CartPage = () => {
       paymentMethod: "cash",
       paymentStatus: "pending",
       createdAt: serverTimestamp(),
+       isSeen: false, // ✅ أضف هذا السطر لتمييز الطلب الجديد
     };
 
     try {
@@ -120,220 +122,96 @@ const CartPage = () => {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="cart-page"
+    >
       <ToastContainer position="top-center" autoClose={3000} />
-      <h2>Your Cart</h2>
+      <h2 className="cart-title">Your Cart</h2>
 
       {Object.keys(cartItems).length === 0 ? (
-        <>
-          <p>No items in your cart.</p>
+        <div className="cart-empty">
+          <p>{t("cart.emptyMessage")}</p>
           <hr />
-        </>
+        </div>
       ) : (
         <>
           {Object.entries(cartItems).map(([key, item]) => {
             const product = productsData[item.id];
-            if (!product) {
-  return (
-    <div key={key}>
-      <h4>{item.name} (Missing data)</h4>
-      <p>Size: {item.size}</p>
-      <p>${item.price.toFixed(2)}</p>
-      <p>Quantity: {item.quantity}</p>
-    </div>
-  );
-}
-
-
             return (
-              <div key={key}>
-                <img src={product.image} alt={item.name} width="100" />
-                <h4>{item.name}</h4>
-                <p>{product.description}</p>
-                <p>${item.price.toFixed(2)}</p>
-                <p>Size: {item.size}</p>
-
-                <div>
-                  <button
-                    onClick={() =>
-                      removeFromCart(item.id, item.size, item.collection)
-                    }
-                  >
-                    -
-                  </button>
-                  <span>{item.quantity}</span>
-                  <button
-                    onClick={() =>
-                      addToCart(
-                        {
-                          id: item.id,
-                          name: item.name,
-                          image: product.image,
-                        },
-                        {
-                          label: item.size,
-                          price: item.price,
-                          collection: item.collection,
-                        }
-                      )
-                    }
-                  >
-                    +
-                  </button>
-                  <span>
-                    Total: ${(item.price * item.quantity).toFixed(2)}
-                  </span>
-                </div>
-
-                <hr />
-              </div>
+              <CartItem
+                key={key}
+                item={item}
+                product={product}
+                addToCart={addToCart}
+                removeFromCart={removeFromCart}
+              />
             );
           })}
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem" }}>
+          <div className="cart-bottom">
             {/* ✅ الصورة والنص التعريفي */}
-            <div>
+            <div className="cart-summary-section">
               {restaurantData?.checkoutImage && (
-                <img
-                  src={restaurantData.checkoutImage}
-                  alt="Checkout"
-                  width="250"
-                />
+                <div className="cart-image-box">
+                  <img src={restaurantData.checkoutImage} alt="Checkout" />
+                  {restaurantData?.CartText && <p>{restaurantData.CartText}</p>}
+                </div>
               )}
-              {restaurantData?.CartText && <p>{restaurantData.CartText}</p>}
+
+              <CartDetails
+                subtotal={subtotal}
+                deliveryFee={deliveryFee}
+                total={total}
+                dineOption={dineOption}
+                setDineOption={setDineOption}
+              />
             </div>
 
-            {/* ✅ معلومات الدفع */}
-            <div>
-              <h3>Cart Total</h3>
-              <p>Subtotal: ${subtotal.toFixed(2)}</p>
-              {dineOption === "outside" && (
-                <p>Delivery Fee: ${deliveryFee.toFixed(2)}</p>
-              )}
-              <p>Total: ${total.toFixed(2)}</p>
-
-              {!dineOption ? (
-                <>
-                  <button onClick={() => setDineOption("inside")}>
-                    I'm dining inside
-                  </button>
-                  <button onClick={() => setDineOption("outside")}>
-                    I want delivery
-                  </button>
-                </>
-              ) : dineOption === "inside" ? (
-                <div>
-                  <label>
-                    Select Table Number:
-                    <select
-                      value={tableNumber}
-                      onChange={(e) => setTableNumber(e.target.value)}
-                    >
-                      {Array.from({ length: 20 }, (_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          Table {i + 1}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <textarea
-                    placeholder="Any notes or requests?"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    style={{ display: "block", margin: "10px 0", width: "100%" }}
+            {/* ✅ اختيار النوع + النموذج المناسب */}
+            <div className="cart-forms">
+              <AnimatePresence mode="wait">
+                {dineOption === "inside" && (
+                  <InsideForm
+                    key="inside-form"
+                    tableNumber={tableNumber}
+                    setTableNumber={setTableNumber}
+                    notes={notes}
+                    setNotes={setNotes}
+                    setShowCashModal={setShowCashModal}
+                    setDineOption={setDineOption}
                   />
-
-                  <button onClick={() => setShowCashModal(true)}>
-                    Proceed to Checkout
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    value={customerInfo.name}
-                    onChange={(e) =>
-                      setCustomerInfo({ ...customerInfo, name: e.target.value })
-                    }
+                )}
+                {dineOption === "outside" && (
+                  <DeliveryForm
+                    key="delivery-form"
+                    customerInfo={customerInfo}
+                    setCustomerInfo={setCustomerInfo}
+                    notes={notes}
+                    setNotes={setNotes}
+                    setShowCashModal={setShowCashModal}
+                    setDineOption={setDineOption}
                   />
-                  <input
-                    type="tel"
-                    placeholder="Phone Number"
-                    value={customerInfo.phone}
-                    onChange={(e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
-                        phone: e.target.value,
-                      })
-                    }
-                  />
-                  <input
-                    type="text"
-                    placeholder="Address"
-                    value={customerInfo.address}
-                    onChange={(e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
-                        address: e.target.value,
-                      })
-                    }
-                  />
-
-                  <textarea
-                    placeholder="Any notes or requests?"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    style={{ display: "block", margin: "10px 0", width: "100%" }}
-                  />
-
-                  <button onClick={() => setShowCashModal(true)}>
-                    Proceed to Checkout
-                  </button>
-                </div>
-              )}
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
           {/* ✅ مودال الدفع */}
           {showCashModal && (
-            <div
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                width: "100vw",
-                height: "100vh",
-                backgroundColor: "rgba(0,0,0,0.5)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                zIndex: 9999,
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: "#fff",
-                  padding: "2rem",
-                  borderRadius: "8px",
-                  minWidth: "300px",
-                }}
-              >
-                <h3>Select Payment Method</h3>
-                <button onClick={handleCashPayment}> 💵 Confirm Cash Payment</button>
-                <button
-                  onClick={() => setShowCashModal(false)}
-                  style={{ marginTop: "10px" }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+            <AnimatePresence mode="wait">
+              <PaymentModal
+                key="payment-modal"
+                onConfirm={handleCashPayment}
+                onClose={() => setShowCashModal(false)}
+              />
+            </AnimatePresence>
           )}
         </>
       )}
-    </div>
+    </motion.div>
   );
 };
 

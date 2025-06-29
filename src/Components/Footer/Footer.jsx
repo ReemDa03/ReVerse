@@ -1,14 +1,15 @@
-// Components/Footer/Footer.jsx
-
 import React, { useEffect, useState } from "react";
 import { FaInstagram, FaWhatsapp, FaEnvelope } from "react-icons/fa";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import AboutLa from "../Abouttt/AboutLa";
+import "./Footer.css";
+import { useTranslation } from "react-i18next"; // ✅
 
 const Footer = ({ slug }) => {
   const [footerSettings, setFooterSettings] = useState(null);
   const [selectedSection, setSelectedSection] = useState(null);
+  const { t } = useTranslation(); // ✅
 
   useEffect(() => {
     const fetchFooter = async () => {
@@ -28,19 +29,18 @@ const Footer = ({ slug }) => {
 
   return (
     <>
-      <div className="footer" id="footer">
+      <div className="footer fade-in-footer" id="footer">
         <div className="footer-content">
           {/* القسم الأيسر */}
           <div className="footer-left">
-            {/* Logo Text or Image */}
             {logoText?.startsWith("http") ? (
               <img src={logoText} alt="Logo" style={{ width: "120px" }} />
             ) : (
               <h2>{logoText}</h2>
             )}
 
-            <p>{aboutText}</p>
-            <p>Contact Us</p>
+            <p className="p-one">{aboutText}</p>
+            <p className="p-two">{t("footer.contactUs")}</p>
             <div className="footer-icons">
               {socialLinks?.email && (
                 <a href={`mailto:${socialLinks.email}`} aria-label="Email">
@@ -72,7 +72,7 @@ const Footer = ({ slug }) => {
 
           {/* القسم الأيمن */}
           <div className="footer-right">
-            <h4>Details</h4>
+            <h4>{t("footer.details")}</h4>
             <ul className="footer-lists">
               {Object.keys(infoSections).map((key) => (
                 <li key={key} onClick={() => setSelectedSection(key)}>
@@ -85,7 +85,9 @@ const Footer = ({ slug }) => {
 
         <hr />
 
-        <p className="footer-copyright">{copyright}</p>
+        <p className="footer-copyright">
+          {copyright} - {t("footer.developedBy")}
+        </p>
       </div>
 
       {/* المودال عند الضغط على قسم */}

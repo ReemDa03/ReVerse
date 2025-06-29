@@ -6,10 +6,14 @@ import {
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../../firebase";
-import { useNavigate, useParams } from "react-router-dom"; // ✅ استدعاء useParams
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
+import "./Login.css";
 
-function Login() {
+function Login({ onClose }) {
+  const { t } = useTranslation();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [slug, setSlug] = useState("");
@@ -17,11 +21,10 @@ function Login() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [adminName, setAdminName] = useState("");
-
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const navigate = useNavigate();
-  const { slug: routeSlug } = useParams(); // ✅ استخراج slug من الرابط
+  const { slug: routeSlug } = useParams();
 
   const clearForm = () => {
     setEmail("");
@@ -30,9 +33,7 @@ function Login() {
   };
 
   useEffect(() => {
-    if (routeSlug) {
-      setSlug(routeSlug); // ✅ تعيين slug تلقائيًا
-    }
+    if (routeSlug) setSlug(routeSlug);
   }, [routeSlug]);
 
   useEffect(() => {
@@ -49,11 +50,11 @@ function Login() {
               setSlug(storedSlug);
               setIsLoggedIn(true);
             } else {
-              toast.error("Stored project not found");
+              toast.error(t("errors.storedProjectNotFound"));
               handleLogout();
             }
           } catch (err) {
-            toast.error("Error while checking saved session");
+            toast.error(t("errors.sessionCheck"));
             handleLogout();
           }
         }
@@ -63,11 +64,19 @@ function Login() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const storedSlug = localStorage.getItem("slug");
+    if (isLoggedIn && routeSlug && storedSlug && routeSlug !== storedSlug) {
+      toast.info(t("messages.projectSwitched"));
+      handleLogout();
+    }
+  }, [routeSlug, isLoggedIn]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!agree) {
-      toast.error("Please agree to the privacy policy!");
+      toast.error(t("errors.privacyPolicy"));
       return;
     }
 
@@ -82,27 +91,24 @@ function Login() {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
-
         if (data.adminEmail === email) {
-          toast.success("Login successful!");
+          toast.success(t("messages.loginSuccess"));
           clearForm();
-
           setAdminName(data.adminName || "Admin");
           setIsLoggedIn(true);
-
           localStorage.setItem("slug", slug);
         } else {
-          toast.error("You do not have permission to access this project!");
+          toast.error(t("errors.notAuthorized"));
           clearForm();
           await signOut(auth);
         }
       } else {
-        toast.error("This project does not exist!");
+        toast.error(t("errors.projectNotFound"));
         clearForm();
         await signOut(auth);
       }
     } catch (error) {
-      toast.error("Login failed!");
+      toast.error(t("errors.loginFailed"));
       clearForm();
     }
   };
@@ -113,70 +119,103 @@ function Login() {
     setAdminName("");
     clearForm();
     localStorage.removeItem("slug");
-    toast.success("You have been logged out.");
+    toast.success(t("messages.loggedOut"));
   };
 
   if (isLoggedIn) {
     return (
-      <div>
-        <button onClick={() => setShowLogoutConfirm(true)}>X</button>
+      <div className="admin-overlay">
+        <div className="admin-container">
+          <button className="admin-close-btn" onClick={onClose}>
+            ✕
+          </button>
 
-        <h2>Hello {adminName} 👋</h2>
-        <p>Now You Can</p>
-        <div>
-          {slug && (
-            <button onClick={() => navigate(`/reverse/${slug}/adminClientH`)}>
-              Go to Admin Panel :
-            </button>
+          {showLogoutConfirm ? (
+            <div className="logout-confirm">
+              <p className="confirm-text">{t("confirm.logout")}</p>
+              <div className="confirm-actions">
+                <button className="admin-btn danger" onClick={handleLogout}>
+                  {t("buttons.yes")}
+                </button>
+                <button
+                  className="admin-btn"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  {t("buttons.no")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <h2 className="admin-title">
+                {t("adminO.hello", { name: adminName })}
+              </h2>
+              <p className="admin-subtitle">{t("adminO.nowYouCan")}</p>
+              <div className="admin-actions">
+                {slug && (
+                  <button
+                    className="admin-btn primary"
+                    onClick={() => navigate(`/reverse/${slug}/adminClientH`)}
+                  >
+                    {t("buttons.goToAdmin")}
+                  </button>
+                )}
+                <p className="admin-or">{t("buttons.or")}</p>
+                <button
+                  className="admin-btn danger"
+                  onClick={() => setShowLogoutConfirm(true)}
+                >
+                  {t("buttons.logout")}
+
+                </button>
+              </div>
+            </>
           )}
-          <p>or</p>
-          <button onClick={() => setShowLogoutConfirm(true)}>Logout</button>
         </div>
-
-        {showLogoutConfirm && (
-          <div>
-            <p>Are you sure you want to log out?</p>
-            <button onClick={handleLogout}>Yes</button>
-            <button onClick={() => setShowLogoutConfirm(false)}>No</button>
-          </div>
-        )}
       </div>
     );
   }
 
   return (
-    <div>
-      <p>Hi Admin!</p>
-      <p>Please enter your information to log in.</p>
+    <div className="admin-overlay">
+      <div className="admin-container">
+        <button className="admin-close-btn" onClick={onClose}>
+          ✕
+        </button>
 
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {/* ✅ عرض اسم المشروع من الرابط بدون إمكانية التعديل */}
-        <p>
-          You will logging into <strong>{slug}</strong> project
-        </p>
+        <p>{t("adminO.welcome")}</p>
+        <p>{t("adminO.loginPrompt")}</p>
 
-        <label>
+        <form onSubmit={handleLogin} className="admin-form">
           <input
-            type="checkbox"
-            checked={agree}
-            onChange={(e) => setAgree(e.target.checked)}
+            type="email"
+            placeholder={t("placeholders.email")}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
-          I agree to the Privacy Policy
-        </label>
-        <button type="submit">Login</button>
-      </form>
+          <input
+            type="password"
+            placeholder={t("placeholders.password")}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <p>
+            {t("adminO.willLogInto")} <strong>{slug}</strong>
+          </p>
+
+          <label className="admin-agree">
+            <input
+              type="checkbox"
+              checked={agree}
+              onChange={(e) => setAgree(e.target.checked)}
+            />
+            {t("privacy.agree")}
+          </label>
+
+          <button type="submit">{t("buttons.login")}</button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -3,8 +3,13 @@ import { db } from "../../../../firebase";
 import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next"; // ✅
+
 
 function CategoryList() {
+
+  const { t } = useTranslation(); // ✅
+
   const { slug } = useParams();
   const [categories, setCategories] = useState([]);
   const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
@@ -65,10 +70,10 @@ function CategoryList() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2 style={{ marginBottom: "10px" }}>Category List</h2>
+      <h2 style={{ marginBottom: "10px" }}>{t("categories.title")}</h2>
 
       {categories.length === 0 ? (
-        <p>No categories found.</p>
+        <p>{t("categories.noCategories")}</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           {categories.map((cat, index) => (

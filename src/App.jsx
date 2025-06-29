@@ -13,13 +13,21 @@ import ProductList from "./Pages/Admin/List/ProductList";
 import OrdersPage from "./Pages/Admin/Orders/OrdersPage";
 import AdminBookings from "./Pages/Admin/BookTable/AdminBookings";
 import PayMethod from "./Pages/Admin/PaymentMethod/PayMethod";
-
+import ProtectedAdminRoute from "./Components/ProtectedRoutes/ProtectedRoutes"; // ✅ استدعاء الحماية
+import "./index.css";
+import { useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 
 
 
 const App = () => {
+
+  const location = useLocation();
+
   return (
-    <Routes>
+
+ <AnimatePresence mode="wait">
+    <Routes location={location} key={location.pathname}>
       <Route path="/" element={<HomeMe />} />
 
       {/* ✅ تغليف المسارات بمزود السياق حسب slug */}
@@ -36,24 +44,26 @@ const App = () => {
         {/* باقي صفحات العملاء */}
       </Route>
 
-      {/* ✅ مسار المسؤول مع الدعم للمسارات الفرعية */}
+      {/* ✅ مسار المسؤول مع حماية */}
       <Route
-  path="/reverse/:slug/adminClientH/*"
-  element={
-    <StoreContextWrapper>
-      <AdminLayout />
-    </StoreContextWrapper>
-  }
->
-  <Route index element={<AdminClientH />} />
-  <Route path="add" element={<AddProduct />} />
-  <Route path="list" element={<ProductList />} />
-  <Route path="orders" element={<OrdersPage />} />
-  <Route path="booking" element={<AdminBookings />} />
-  <Route path="payMethod" element={<PayMethod />} />
-</Route>
-
+        path="/reverse/:slug/adminClientH/*"
+        element={
+          <StoreContextWrapper>
+            <ProtectedAdminRoute>
+              <AdminLayout />
+            </ProtectedAdminRoute>
+          </StoreContextWrapper>
+        }
+      >
+        <Route index element={<AdminClientH />} />
+        <Route path="add" element={<AddProduct />} />
+        <Route path="list" element={<ProductList />} />
+        <Route path="orders" element={<OrdersPage />} />
+        <Route path="booking" element={<AdminBookings />} />
+        <Route path="payMethod" element={<PayMethod />} />
+      </Route>
     </Routes>
+    </AnimatePresence>
   );
 };
 

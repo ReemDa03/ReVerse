@@ -4,6 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
+import './Header.css'
 
 function Header() {
   const { slug } = useParams();
@@ -31,18 +32,22 @@ function Header() {
   if (!data) return null;
 
   return (
-    <header>
+    <header className="header">
+  <div className="header-container">
+    <div className="header-text">
+      <h1>{data.heroTitle}</h1>
+      <p>{data.heroSubtitle}</p>
+    </div>
+
+    <div className="header-image">
       <LazyLoadImage
         src={data.heroImage}
         alt="Hero"
         effect="blur"
-        width="100%"
-        height="auto"
-        style={{ maxHeight: "400px", objectFit: "contain" }}
       />
-      <h1>{data.heroTitle}</h1>
-      <p>{data.heroSubtitle}</p>
-    </header>
+    </div>
+  </div>
+</header>
   );
 }
 

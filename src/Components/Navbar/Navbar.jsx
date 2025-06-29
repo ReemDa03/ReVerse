@@ -1,19 +1,28 @@
-// ✅ src/Components/Navbar/Navbar.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import SideMenu from "../SideMenu/SideMenu";
-import AdminLogin from "../Admin/AdminLogin"; // ✅ مكون تسجيل دخول الأدمن
-import ContacttNav from "../ContacttNav/ContactNav"; // ✅ مكون التواصل
+import AdminLogin from "../Admin/AdminLogin";
+import ContacttNav from "../ContacttNav/ContactNav";
+import LanguageSwitcher from "../LanguageSwitcher";
+import "./Navbar.css";
+import { useTranslation } from "react-i18next";
 
 function Navbar() {
+  const { t, i18n } = useTranslation(); // ✅
+
   const { slug } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false); // ✅ لإظهار مكون الأدمن
-  const [isContactOpen, setIsContactOpen] = useState(false); // ✅ لإظهار مكون التواصل
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
+
+  // ✅ تخزين اللغة في localStorage
+  const [language, setLanguage] = useState(
+    localStorage.getItem("language") || "en"
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,40 +42,40 @@ function Navbar() {
     fetchData();
   }, [slug]);
 
+  const handleLanguageChange = (lang) => {
+    setLanguage(lang);
+    localStorage.setItem("language", lang);
+    i18n.changeLanguage(lang); // ✅ بدل reload
+  };
+
   if (!data) return null;
 
   return (
     <>
-      <nav
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "1rem",
-          padding: "1rem",
-        }}
-      >
-        <img
-          src={data.logo}
-          alt="logo"
-          width="100"
-          style={{ objectFit: "contain" }}
-        />
-        <button onClick={() => navigate(`/reverse/${slug}/menu`)}>Menu</button>
-        <button onClick={() => navigate(`/reverse/${slug}/cart`)}>Cart</button>
-        <button onClick={() => setIsMenuOpen(true)}>≡</button>
+      <nav className="navbar fade-in-footer">
+        <img className="logo" src={data.logo} alt="logo" width="100" />
+
+        <div className="menusec">
+          <LanguageSwitcher
+            language={language}
+            setLanguage={handleLanguageChange}
+          />
+          <button onClick={() => navigate(`/reverse/${slug}/cart`)}>
+            {t("navbar.cart")}
+          </button>
+          <button onClick={() => setIsMenuOpen(true)}>≡</button>
+        </div>
       </nav>
 
-      {/* ✅ القائمة الجانبية */}
       {isMenuOpen && (
         <SideMenu
           slug={slug}
           onClose={() => setIsMenuOpen(false)}
-          onOpenContact={() => setIsContactOpen(true)} // ✅ فتح مكون التواصل
-          onOpenAdmin={() => setIsAdminOpen(true)} // ✅ فتح مكون الأدمن
+          onOpenContact={() => setIsContactOpen(true)}
+          onOpenAdmin={() => setIsAdminOpen(true)}
         />
       )}
 
-      {/* ✅ مكون الأدمن يظهر بدون راوت */}
       {isAdminOpen && (
         <AdminLogin
           slug={slug}
@@ -78,12 +87,8 @@ function Navbar() {
         />
       )}
 
-      {/* ✅ مكون التواصل يظهر بدون راوت */}
       {isContactOpen && (
-        <ContacttNav
-          slug={slug}
-          onClose={() => setIsContactOpen(false)}
-        />
+        <ContacttNav slug={slug} onClose={() => setIsContactOpen(false)} />
       )}
     </>
   );

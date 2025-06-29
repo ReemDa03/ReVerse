@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../../../../firebase";
 import {
   collection,
@@ -9,14 +9,24 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import "./AdminBookings.css";
+import { IoArrowBack } from "react-icons/io5";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next"; // ✅
+
+
 
 const AdminBookings = () => {
+
+   const { t } = useTranslation(); // ✅
+
   const { slug } = useParams();
   const [bookings, setBookings] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterDate, setFilterDate] = useState("");
   const [deleteId, setDeleteId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -65,16 +75,30 @@ const AdminBookings = () => {
   });
 
   return (
-    <div className="admin-bookings">
-      <h2>Reservations Management</h2>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="admin-bookings"
+    >
+      <button type="button" className="back-btn" onClick={() => navigate(-1)}>
+        <IoArrowBack className="back-icon" />
+       {t("bookings.back")}
+      </button>
+      <h2>{t("bookings.title")}</h2>
 
       <div className="filters">
-        <select onChange={(e) => setFilterStatus(e.target.value)}>
-          <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="rejected">Rejected</option>
-        </select>
+        <motion.select
+          onChange={(e) => setFilterStatus(e.target.value)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <option value="all">{t("bookings.filters.all")}</option>
+          <option value="pending">{t("bookings.filters.pending")}</option>
+          <option value="confirmed">{t("bookings.filters.confirmed")}</option>
+          <option value="rejected">{t("bookings.filters.rejected")}</option>
+        </motion.select>
 
         <input
           type="date"
@@ -83,49 +107,83 @@ const AdminBookings = () => {
         />
       </div>
 
-      {filteredBookings.length === 0 ? (
-        <p className="no-bookings">There are no future bookings.</p>
-      ) : (
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Seats</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Payment</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredBookings.map((b) => (
-                <tr key={b.id}>
-                  <td>{b.name}</td>
-                  <td>{b.tableSize}</td>
-                  <td>{b.date}</td>
-                  <td>{b.time}</td>
-                  <td>{b.paymentMethod}</td>
-                  <td>
-                    <span className={`status ${b.status}`}>{b.status}</span>
-                  </td>
-                  <td>
-                    <button onClick={() => handleStatusChange(b.id, "confirmed")}>✅</button>
-                    <button onClick={() => handleStatusChange(b.id, "rejected")}>❌</button>
-                    <button onClick={() => {
-                      setDeleteId(b.id);
-                      setShowModal(true);
-                    }}>
-                      Delete
-                    </button>
-                  </td>
+      <AnimatePresence mode="wait">
+        {filteredBookings.length === 0 ? (
+          <motion.p
+            key="no-bookings"
+            className="no-bookings"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {t("bookings.noBookings")}
+          </motion.p>
+        ) : (
+          <motion.div
+            key="bookings-table"
+            className="table-wrapper"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.4 }}
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th>{t("bookings.table.name")}</th>
+                  <th>{t("bookings.table.seats")}</th>
+                  <th>{t("bookings.table.date")}</th>
+                  <th>{t("bookings.table.time")}</th>
+                  <th>{t("bookings.table.payment")}</th>
+                  <th>{t("bookings.table.status")}</th>
+                  <th>{t("bookings.table.actions")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {filteredBookings.map((b) => (
+                  <motion.tr
+                    key={b.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <td>{b.name}</td>
+                    <td>{b.tableSize}</td>
+                    <td>{b.date}</td>
+                    <td>{b.time}</td>
+                    <td>{b.paymentMethod}</td>
+                    <td>
+                      <span className={`status ${b.status}`}>{b.status}</span>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleStatusChange(b.id, "confirmed")}
+                      >
+                        ✅
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange(b.id, "rejected")}
+                      >
+                        ❌
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDeleteId(b.id);
+                          setShowModal(true);
+                        }}
+                      >
+                        {t("buttons.delete")}
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ✅ المودال - خارج الجدول */}
       {showModal && (
@@ -133,13 +191,17 @@ const AdminBookings = () => {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <p>Are you sure you want to delete this booking?</p>
             <div className="modal-actions">
-              <button onClick={confirmDelete} className="yes-btn">Yes</button>
-              <button onClick={() => setShowModal(false)} className="no-btn">No</button>
+              <button onClick={confirmDelete} className="yes-btn">
+                Yes
+              </button>
+              <button onClick={() => setShowModal(false)} className="no-btn">
+                No
+              </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

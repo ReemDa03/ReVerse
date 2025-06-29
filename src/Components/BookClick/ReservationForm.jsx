@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   doc,
   getDoc,
@@ -10,6 +10,8 @@ import { db } from "../../../firebase";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BookClick from "./BookClick";
+// حذفنا framer-motion
+import { useTranslation } from "react-i18next"; // ✅
 
 function ReservationForm({ slug }) {
   const [settings, setSettings] = useState(null);
@@ -18,14 +20,17 @@ function ReservationForm({ slug }) {
   const [time, setTime] = useState("08:00 PM");
   const [name, setName] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [reservationId, setReservationId] = useState(null); // نرسل ID للـ BookClick
+  const [reservationId, setReservationId] = useState(null);
+  const sectionRef = useRef(null);
+  const { t } = useTranslation(); // ✅
 
   useEffect(() => {
     const fetchSettings = async () => {
       const docRef = doc(db, "ReVerse", slug);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setSettings(docSnap.data().reservationSettings);
+        const data = docSnap.data().reservationSettings;
+        setSettings(data);
       }
     };
     fetchSettings();
@@ -35,7 +40,7 @@ function ReservationForm({ slug }) {
     e.preventDefault();
 
     if (!name || !date || !time) {
-      toast.error("Please fill all required fields.");
+      toast.error(t("reservation.errors.requiredFields"));
       return;
     }
 
@@ -60,62 +65,101 @@ function ReservationForm({ slug }) {
       setName("");
     } catch (err) {
       console.error("Reservation error:", err);
-      toast.error("Something went wrong.");
+      toast.error(t("reservation.errors.general"));
     }
   };
 
   if (!settings) return null;
 
   return (
-    <section id="book">
-      <h2>—BOOK A TABLE—</h2>
+    <section id="book" className="reservation-section" ref={sectionRef}>
+      <h2 className="reservation-title fade-up">
+        —{t("reservation.title")}—
+      </h2>
       <div className="reservation-wrapper">
-        <div className="left-side">
-          <img src={settings.reservationImage} alt="Restaurant" />
-          <p><strong>Opening Hours:</strong><br />{settings.openingHours}</p>
-          <p><strong>Additional Info:</strong><br />{settings.additionalInfo}</p>
+        <div className="left-side fade-left">
+          <img
+            className="reservation-image"
+            src={settings.reservationImage}
+            alt="Restaurant"
+          />
+          <p className="reservation-info">
+            <strong>{t("reservation.info.openingHours")}:</strong>
+            <br />
+            {settings.openingHours}
+          </p>
+          <p className="reservation-info">
+            <strong>{t("reservation.info.additionalInfo")}:</strong>
+            <br />
+            {settings.additionalInfo}
+          </p>
         </div>
 
-        <div className="right-side">
+        <div className="right-side fade-right">
           <form onSubmit={handleSubmit}>
-            <label>Your Name:</label>
+            <label className="reservation-label">
+              {t("reservation.labels.yourName")}:
+            </label>
             <input
+              className="reservation-input"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
 
-            <label>Choose Table Size:</label>
+            <label className="reservation-label">
+              {t("reservation.labels.tableSize")}:
+            </label>
             <select
               value={tableSize}
               onChange={(e) => setTableSize(e.target.value)}
             >
               {[2, 4, 6, 8, 10, 12].map((n) => (
-                <option key={n} value={n}>{n}</option>
+                <option key={n} value={n}>
+                  {n}
+                </option>
               ))}
             </select>
 
-            <label>Choose a Day:</label>
+            <label className="reservation-label">
+              {t("reservation.labels.chooseADay")}:
+            </label>
             <input
+              className="reservation-input"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
             />
 
-            <label>Choose a Time:</label>
+            <label className="reservation-label">
+              {t("reservation.labels.chooseATime")}:
+            </label>
             <select value={time} onChange={(e) => setTime(e.target.value)}>
               {[
-                "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM",
-                "05:00 PM", "06:00 PM", "06:30 PM", "07:00 PM",
-                "07:30 PM", "08:00 PM", "08:30 PM", "09:00 PM",
+                "01:00 PM",
+                "02:00 PM",
+                "03:00 PM",
+                "04:00 PM",
+                "05:00 PM",
+                "06:00 PM",
+                "06:30 PM",
+                "07:00 PM",
+                "07:30 PM",
+                "08:00 PM",
+                "08:30 PM",
+                "09:00 PM",
               ].map((t) => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t} value={t}>
+                  {t}
+                </option>
               ))}
             </select>
 
-            <button type="submit">Place Order</button>
+            <button className="reservation-button" type="submit">
+              {t("buttons.submit")}
+            </button>
           </form>
         </div>
       </div>

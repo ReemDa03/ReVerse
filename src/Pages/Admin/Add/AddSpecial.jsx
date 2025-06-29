@@ -1,4 +1,4 @@
-// ✅ AddSpecial.jsx بعد التعديل الكامل 
+// ✅ AddSpecial.jsx بعد التعديل الكامل
 
 import React, { useState, useEffect } from "react";
 import { db } from "../../../../firebase";
@@ -13,9 +13,13 @@ import {
 } from "firebase/firestore";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-
+import "./AddSpecial.css";
+import { useTranslation } from "react-i18next"; // ✅ إضافة
 
 function AddSpecial() {
+
+    const { t } = useTranslation(); // ✅ استخدام
+
   const { slug } = useParams();
   const [specialTitle, setSpecialTitle] = useState("");
   const [existingTitle, setExistingTitle] = useState("");
@@ -28,6 +32,22 @@ function AddSpecial() {
   const [specialItems, setSpecialItems] = useState([]);
   const [confirmDeleteTitle, setConfirmDeleteTitle] = useState(false);
   const [confirmDeleteItem, setConfirmDeleteItem] = useState(null);
+  const [expandedDescriptionId, setExpandedDescriptionId] = useState(null);
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const getShortDescription = (text) => {
+    if (!text) return "";
+    const words = text.split(" ");
+    return words.length <= 2 ? text : words.slice(0, 2).join(" ") + " ...";
+  };
 
   useEffect(() => {
     const fetchSpecial = async () => {
@@ -37,8 +57,13 @@ function AddSpecial() {
         const data = docSnap.data();
         if (data.specialTitle) {
           setExistingTitle(data.specialTitle);
-          const itemsSnapshot = await getDocs(collection(db, "ReVerse", slug, "specialItems"));
-          const items = itemsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          const itemsSnapshot = await getDocs(
+            collection(db, "ReVerse", slug, "specialItems")
+          );
+          const items = itemsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
           setSpecialItems(items);
         }
       }
@@ -54,10 +79,13 @@ function AddSpecial() {
     formData.append("file", file);
     formData.append("upload_preset", "react_upload");
     try {
-      const res = await fetch("https://api.cloudinary.com/v1_1/dwupyymoc/image/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dwupyymoc/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
       const data = await res.json();
       const publicId = data.public_id;
       const version = data.version;
@@ -96,6 +124,11 @@ function AddSpecial() {
       toast.error("You must add a special title first");
       return;
     }
+    // ✅ تحديد الحد الأقصى
+    if (specialItems.length >= 3) {
+      toast.error("You can only add up to 3 special items");
+      return;
+    }
     if (!itemName || !itemDescription || !itemImageURL || !price) {
       toast.error("Fill all fields");
       return;
@@ -109,7 +142,10 @@ function AddSpecial() {
         price: parseFloat(price),
         sizes: [{ label: "Standard", price: parseFloat(price) }],
       };
-      const docRef = await addDoc(collection(db, "ReVerse", slug, "specialItems"), newItem);
+      const docRef = await addDoc(
+        collection(db, "ReVerse", slug, "specialItems"),
+        newItem
+      );
       setSpecialItems((prev) => [...prev, { id: docRef.id, ...newItem }]);
       setItemName("");
       setItemDescription("");
@@ -135,7 +171,9 @@ function AddSpecial() {
 
   const handleDeleteAll = async () => {
     try {
-      const itemsSnapshot = await getDocs(collection(db, "ReVerse", slug, "specialItems"));
+      const itemsSnapshot = await getDocs(
+        collection(db, "ReVerse", slug, "specialItems")
+      );
       for (const docSnap of itemsSnapshot.docs) {
         await deleteDoc(doc(db, "ReVerse", slug, "specialItems", docSnap.id));
       }
@@ -152,131 +190,139 @@ function AddSpecial() {
   };
 
   return (
-    // 🟢 JSX + التنسيقات والمودالات كلها تبقى كما هي بدون تغيير
-    // انسخيها كما هي من الكود السابق
-    
-    <div>
-      <h2>Add Special Items</h2>
+    <div className="special-wrapper">
+      <h2>{t("special.addSpecialItems")}</h2>
 
       {!existingTitle ? (
-        <div>
+        <div className="add-product-form">
           <input
-            placeholder="Special Section Title"
+            className="input-text"
+            placeholder={t("special.sectionTitlePlaceholder")}
             value={specialTitle}
             onChange={(e) => setSpecialTitle(e.target.value)}
           />
-          <button onClick={handleAddTitle}>Save Title</button>
+          <button className="submit-btn" onClick={handleAddTitle}>
+            {t("special.saveTitle")}
+          </button>
         </div>
       ) : (
-        <div>
+        <div className="special-title-box">
           <h3>{existingTitle}</h3>
-          <button onClick={() => setConfirmDeleteTitle(true)}>Delete</button>
+          <button
+            className="special-delete-btn"
+            onClick={() => setConfirmDeleteTitle(true)}
+          >
+              {t("buttons.delete")}
+          </button>
         </div>
       )}
 
       {existingTitle && (
-        <div>
+        <div className="add-product-form">
           <input
-            placeholder="Name"
+            className="input-text"
+            placeholder={t("special.name")}
             value={itemName}
             onChange={(e) => setItemName(e.target.value)}
           />
           <textarea
-            placeholder="Description"
+            className="textarea"
+            placeholder={t("special.description")}
             value={itemDescription}
             onChange={(e) => setItemDescription(e.target.value)}
           />
           <input
-            placeholder="Old Price"
+            className="input-price"
+            placeholder={t("special.oldPrice")}
             value={oldPrice}
             onChange={(e) => setOldPrice(e.target.value)}
             type="number"
           />
           <input
-            placeholder="Price"
+            className="input-price"
+            placeholder={t("special.price")}
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             type="number"
           />
           <input
+            className="input-file"
             type="file"
             onChange={(e) => handleImageUpload(e.target.files[0])}
           />
-          {itemImageURL && <img src={itemImageURL} width="100" alt="Preview" />}
-          <button onClick={handleAddItem} disabled={isImageUploading}>
-            Add Item
+          {itemImageURL && (
+            <div className="image-preview">
+              <img src={itemImageURL} className="preview-img" alt="Preview" />
+              <button
+                type="button"
+                className="change-image-btn"
+                onClick={() => setItemImageURL("")}
+              >
+                {t("special.changeImage")}
+
+              </button>
+            </div>
+          )}
+          <button
+            className="submit-btn"
+            onClick={handleAddItem}
+            disabled={isImageUploading}
+          >
+            {t("special.addItem")}
+
           </button>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-              marginTop: "30px",
-            }}
-          >
+          <div className="special-items-list">
             {specialItems.map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  border: "1px solid #eee",
-                  borderRadius: "8px",
-                  padding: "10px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "80px 1fr 120px 50px",
-                    alignItems: "center",
-                    gap: "15px",
-                  }}
-                >
+              <div className="special-item-card" key={index}>
+                <div className="special-item-content">
                   <img
                     src={item.image}
                     alt={item.name}
-                    style={{
-                      width: "70px",
-                      height: "70px",
-                      objectFit: "cover",
-                      borderRadius: "4px",
-                    }}
+                    className="special-item-img"
                   />
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "4px",
-                    }}
-                  >
+                  <div className="special-item-details">
                     <strong>{item.name}</strong>
-                    <span style={{ fontSize: "13px", color: "gray" }}>
-                      {item.description.length > 40
-                        ? item.description.slice(0, 40) + "..."
+                    <span
+                      style={{
+                        fontSize: "13px",
+                        color: "gray",
+                        cursor: isMobileView ? "pointer" : "default",
+                        whiteSpace: isMobileView ? "nowrap" : "normal",
+                        overflow: isMobileView ? "hidden" : "visible",
+                        textOverflow: isMobileView ? "ellipsis" : "unset",
+                      }}
+                      onClick={() =>
+                        isMobileView && setExpandedDescriptionId(item.id)
+                      }
+                    >
+                      {isMobileView
+                        ? getShortDescription(item.description)
                         : item.description}
                     </span>
                   </div>
-                  <span>
-                    {item.oldPrice && (
-                      <s style={{ color: "red", marginRight: "8px" }}>
-                        ${item.oldPrice}
-                      </s>
-                    )}
+                  <span className="special-item-price">
+                    {item.oldPrice && <s>${item.oldPrice}</s>}
                     <b>${item.price}</b>
                   </span>
                   <div>
+                    {expandedDescriptionId === item.id && (
+                      <div
+                        className="description-modal-overlay"
+                        onClick={() => setExpandedDescriptionId(null)}
+                      >
+                        <div
+                          className="description-modal"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <strong>{t("special.fullDescription")}</strong>
+                          <p style={{ marginTop: "6px" }}>{item.description}</p>
+                        </div>
+                      </div>
+                    )}
                     <button
+                      className="special-delete-btn"
                       onClick={() => setConfirmDeleteItem(item)}
-                      style={{
-                        background: "#eee",
-                        border: "1px solid #ccc",
-                        padding: "4px 10px",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
                     >
                       X
                     </button>
@@ -290,38 +336,13 @@ function AddSpecial() {
 
       {/* مودال حذف القسم كامل */}
       {confirmDeleteTitle && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: "20px 30px",
-              borderRadius: "8px",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-              maxWidth: "400px",
-              width: "90%",
-              textAlign: "center",
-            }}
-          >
-            <p style={{ marginBottom: "20px", fontSize: "16px" }}>
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <p>
               Are you sure you want to delete the entire section{" "}
               <strong>"{existingTitle}"</strong>?
             </p>
-            <div
-              style={{ display: "flex", justifyContent: "center", gap: "15px" }}
-            >
+            <div className="modal-buttons">
               <button
                 onClick={handleDeleteAll}
                 style={{
@@ -356,63 +377,20 @@ function AddSpecial() {
 
       {/* مودال حذف عنصر واحد */}
       {confirmDeleteItem && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: "20px 30px",
-              borderRadius: "8px",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-              maxWidth: "400px",
-              width: "90%",
-              textAlign: "center",
-            }}
-          >
-            <p style={{ marginBottom: "20px", fontSize: "16px" }}>
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <p>
               Are you sure you want to delete{" "}
               <strong>"{confirmDeleteItem.name}"</strong>?
             </p>
-            <div
-              style={{ display: "flex", justifyContent: "center", gap: "15px" }}
-            >
+            <div className="modal-buttons">
               <button
+                className="yes"
                 onClick={() => handleDeleteItem(confirmDeleteItem)}
-                style={{
-                  background: "red",
-                  color: "white",
-                  border: "none",
-                  padding: "8px 16px",
-                  borderRadius: "5px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                }}
               >
                 Yes
               </button>
-              <button
-                onClick={() => setConfirmDeleteItem(null)}
-                style={{
-                  background: "gray",
-                  color: "white",
-                  border: "none",
-                  padding: "8px 16px",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                }}
-              >
+              <button className="no" onClick={() => setConfirmDeleteItem(null)}>
                 No
               </button>
             </div>

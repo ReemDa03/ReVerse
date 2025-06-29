@@ -1,22 +1,27 @@
 // 📁 AddProduct.jsx
 import React, { useRef, useState, useEffect } from "react";
 import { db } from "../../../../firebase";
-import {
-  doc,
-  getDoc,
-  collection,
-  addDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { doc, getDoc, collection, addDoc, updateDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import AddSpecial from "./AddSpecial";
 
+import UpgradeNotice from "./UpgradeNotice";
+
 import AddProOne from "./AddProOne";
 import AddCategory from "./AddCategory";
+import "./AddCategory.css";
+import { IoArrowBack } from "react-icons/io5";
+import { motion } from "framer-motion";
+
+import { useTranslation } from "react-i18next"; // ✅
+
 
 function AddProduct() {
+
+   const { t } = useTranslation(); // ✅
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [sizes, setSizes] = useState({
@@ -37,6 +42,8 @@ function AddProduct() {
   const [categoryImageURL, setCategoryImageURL] = useState("");
 
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const [planType, setPlanType] = useState("basic");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -46,6 +53,7 @@ function AddProduct() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setCategoriesList(data.categories || []);
+          setPlanType(data.plan || "basic"); // ← أضفنا هاد السطر
         } else {
           toast.error("Categories not found.");
         }
@@ -219,45 +227,91 @@ function AddProduct() {
   };
 
   return (
-    <>
-      <AddProOne
-        name={name}
-        description={description}
-        sizes={sizes}
-        useUnifiedSize={useUnifiedSize}
-        unifiedPrice={unifiedPrice}
-        category={category}
-        categoriesList={categoriesList}
-        uploadedImageURL={uploadedImageURL}
-        imageFile={imageFile}
-        isImageUploading={isImageUploading}
-        setName={setName}
-        setDescription={setDescription}
-        setSizes={setSizes}
-        setUseUnifiedSize={setUseUnifiedSize}
-        setUnifiedPrice={setUnifiedPrice}
-        setCategory={setCategory}
-        setImageFile={setImageFile}
-        setUploadedImageURL={setUploadedImageURL}
-        handleImageUpload={handleImageUpload}
-        handleSubmit={handleSubmit}
-      />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      <button type="button" className="back-btn" onClick={() => navigate(-1)}>
+        <IoArrowBack className="back-icon" />
+        {t("addProduct.back")}
+      </button>
 
-      <AddCategory
-        categoryImageURL={categoryImageURL}
-        newCategoryName={newCategoryName}
-        setNewCategoryName={setNewCategoryName}
-        setCategoryImageURL={setCategoryImageURL}
-        handleCategoryImageUpload={handleCategoryImageUpload}
-        handleAddCategory={handleAddCategory}
-        categorySectionRef={categorySectionRef}
-      />
-      <hr style={{ margin: "30px 0" }} />
-      <AddSpecial
-  slug={slug}
-/>
+      <div className="nav-buttons">
+        <button
+          onClick={() =>
+            document
+              .getElementById("add-product-section")
+              .scrollIntoView({ behavior: "smooth" })
+          }
+        >
+         {t("addProduct.tabs.product")}
+        </button>
+        <button
+          onClick={() =>
+            document
+              .getElementById("add-category-section")
+              .scrollIntoView({ behavior: "smooth" })
+          }
+        >
+           {t("addProduct.tabs.category")}
+        </button>
+        <button
+          onClick={() =>
+            document
+              .getElementById("add-special-section")
+              .scrollIntoView({ behavior: "smooth" })
+          }
+        >
+          {t("addProduct.tabs.special")}
+        </button>
+      </div>
 
-    </>
+      <div id="add-product-section">
+        <AddProOne
+          name={name}
+          description={description}
+          sizes={sizes}
+          useUnifiedSize={useUnifiedSize}
+          unifiedPrice={unifiedPrice}
+          category={category}
+          categoriesList={categoriesList}
+          uploadedImageURL={uploadedImageURL}
+          imageFile={imageFile}
+          isImageUploading={isImageUploading}
+          setName={setName}
+          setDescription={setDescription}
+          setSizes={setSizes}
+          setUseUnifiedSize={setUseUnifiedSize}
+          setUnifiedPrice={setUnifiedPrice}
+          setCategory={setCategory}
+          setImageFile={setImageFile}
+          setUploadedImageURL={setUploadedImageURL}
+          handleImageUpload={handleImageUpload}
+          handleSubmit={handleSubmit}
+        />
+      </div>
+
+      <div id="add-category-section">
+        <AddCategory
+          categoryImageURL={categoryImageURL}
+          newCategoryName={newCategoryName}
+          setNewCategoryName={setNewCategoryName}
+          setCategoryImageURL={setCategoryImageURL}
+          handleCategoryImageUpload={handleCategoryImageUpload}
+          handleAddCategory={handleAddCategory}
+          categorySectionRef={categorySectionRef}
+        />
+      </div>
+
+      {/*<div id="add-special-section">
+        {planType === "premium" ? (
+          <AddSpecial slug={slug} />
+        ) : (
+          <UpgradeNotice slug={slug} />
+        )}
+      </div>*/}
+    </motion.div>
   );
 }
 

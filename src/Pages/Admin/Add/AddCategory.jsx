@@ -1,6 +1,8 @@
-
-// 📁 AddCategory.jsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next"; // ✅
+import "./AddCategory.css";
+import { toast } from "react-toastify";
 
 function AddCategory({
   categoryImageURL,
@@ -9,24 +11,24 @@ function AddCategory({
   setCategoryImageURL,
   handleCategoryImageUpload,
   handleAddCategory,
-  categorySectionRef
+  categorySectionRef,
 }) {
+  const navigate = useNavigate();
+  const { t } = useTranslation(); // ✅
+
   return (
-    <div
-      ref={categorySectionRef}
-      style={{
-        marginTop: "40px",
-        border: "1px solid #ddd",
-        padding: "20px",
-        borderRadius: "8px",
-      }}
-    >
-      <h3>Add Category</h3>
-      <p style={{ fontSize: "14px", color: "#777" }}>
-        Preferred image ratio is <strong>1:1</strong> (square).
+    <div className="add-category-wrapper" ref={categorySectionRef}>
+      <button style={{ display: "none" }} className="close-category-btn" onClick={() => navigate(-1)}>
+        ✕
+      </button>
+
+      <h3 className="add-category-title">{t("addCategory.title")}</h3>
+      <p className="add-category-note">
+        {t("addCategory.note")} <strong>1:1</strong>
       </p>
 
       <input
+        className="add-category-input"
         type="file"
         accept="image/*"
         onChange={(e) => {
@@ -36,44 +38,52 @@ function AddCategory({
       />
 
       {categoryImageURL && (
-        <div style={{ marginTop: "10px" }}>
+        <div className="category-preview">
           <img
             src={categoryImageURL}
-            alt="Category Preview"
-            style={{ width: "150px", border: "1px solid #ccc" }}
+            alt={t("addCategory.previewAlt")}
+            className="category-preview-img"
           />
-          <br />
           <button
             type="button"
-            onClick={() => {
-              setCategoryImageURL("");
-            }}
+            className="change-image-btn"
+            onClick={() => setCategoryImageURL("")}
           >
-            Change Image
+            {t("addCategory.changeImage")}
           </button>
         </div>
       )}
 
       <input
+        className="add-category-name"
         type="text"
-        placeholder="Category Name"
+        placeholder={t("addCategory.namePlaceholder")}
         value={newCategoryName}
         onChange={(e) => setNewCategoryName(e.target.value)}
-        style={{ marginTop: "10px" }}
       />
-      <br />
 
       <button
         type="button"
-        style={{ marginTop: "10px" }}
-        onClick={handleAddCategory}
+        className="add-category-submit"
+        onClick={() => {
+          if (!newCategoryName?.trim() || !categoryImageURL) {
+            if (!newCategoryName?.trim() && !categoryImageURL) {
+              toast.error(t("addCategory.errors.nameAndImage"));
+            } else if (!newCategoryName?.trim()) {
+              toast.error(t("addCategory.errors.nameOnly"));
+            } else {
+              toast.error(t("addCategory.errors.imageOnly"));
+            }
+            return;
+          }
+
+          handleAddCategory();
+        }}
       >
-        Add Category
+        {t("addCategory.submit")}
       </button>
     </div>
   );
 }
 
 export default AddCategory;
-
-

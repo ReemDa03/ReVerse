@@ -1,5 +1,9 @@
 // 📁 AddProOne.jsx
 import React from "react";
+import "./AddPro.css";
+import { useNavigate } from "react-router-dom";
+import { IoArrowBack } from "react-icons/io5";
+import { useTranslation } from "react-i18next"; // ✅ الترجمة
 
 function AddProOne({
   name,
@@ -23,12 +27,25 @@ function AddProOne({
   handleImageUpload,
   handleSubmit
 }) {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
   return (
-    <form onSubmit={handleSubmit}>
-      <p>Please upload main image:</p>
+    <form onSubmit={handleSubmit} className="add-product-form">
+      {/* <button
+        type="button"
+        className="back-btn"
+        onClick={() => navigate(-1)}
+      >
+        <IoArrowBack className="back-icon" />
+        {t("addProduct.back")}
+      </button> */}
+
+      <p className="form-label">{t("addProduct.uploadImage")}</p>
       <input
         type="file"
         accept="image/*"
+        className="input-file"
         onChange={(e) => {
           const file = e.target.files[0];
           setImageFile(file);
@@ -37,43 +54,41 @@ function AddProOne({
       />
 
       {uploadedImageURL && (
-        <div style={{ marginTop: "10px" }}>
-          <img
-            src={uploadedImageURL}
-            alt="Uploaded Preview"
-            style={{ width: "200px", border: "1px solid #ccc" }}
-          />
-          <br />
+        <div className="image-preview">
+          <img src={uploadedImageURL} alt="Uploaded Preview" className="preview-img" />
           <button
             type="button"
+            className="change-image-btn"
             onClick={() => {
               setUploadedImageURL("");
               setImageFile(null);
             }}
           >
-            Change Image
+            {t("addCategory.changeImage")}
           </button>
         </div>
       )}
 
-      <p>Product name:</p>
+      <p className="form-label">{t("addProduct.name")}</p>
       <input
         type="text"
-        placeholder="Product Name"
+        placeholder={t("addProduct.namePlaceholder")}
         value={name}
         onChange={(e) => setName(e.target.value)}
+        className="input-text"
       />
 
-      <p>Product description:</p>
+      <p className="form-label">{t("addProduct.description")}</p>
       <textarea
-        placeholder="Description"
+        placeholder={t("addProduct.descriptionPlaceholder")}
         value={description}
         onChange={(e) => setDescription(e.target.value)}
+        className="textarea"
       />
 
-      <p>Select sizes and prices:</p>
+      <p className="form-label">{t("addProduct.sizesTitle")}</p>
 
-      <label>
+      {/*<label className="checkbox-label">
         <input
           type="checkbox"
           checked={useUnifiedSize}
@@ -82,21 +97,22 @@ function AddProOne({
             setUnifiedPrice("");
           }}
         />
-        Standard
+        {t("addProduct.standard")}
       </label>
+
       {useUnifiedSize && (
         <input
           type="number"
-          placeholder="Price"
+          placeholder={t("addProduct.price")}
           value={unifiedPrice}
           onChange={(e) => setUnifiedPrice(e.target.value)}
-          style={{ marginLeft: "10px", marginBottom: "10px" }}
+          className="input-price"
         />
-      )}
+      )}*/}
 
       {["S", "M", "L"].map((sizeKey) => (
-        <div key={sizeKey} style={{ marginBottom: "10px" }}>
-          <label>
+        <div key={sizeKey} className="size-option">
+          <label className="checkbox-label">
             <input
               type="checkbox"
               checked={sizes[sizeKey].selected}
@@ -118,7 +134,7 @@ function AddProOne({
           {sizes[sizeKey].selected && !useUnifiedSize && (
             <input
               type="number"
-              placeholder={`Price for ${sizeKey}`}
+              placeholder={`${t("addProduct.priceFor")} ${sizeKey}`}
               value={sizes[sizeKey].price}
               onChange={(e) =>
                 setSizes((prev) => ({
@@ -129,18 +145,19 @@ function AddProOne({
                   },
                 }))
               }
-              style={{ marginLeft: "10px" }}
+              className="input-price"
             />
           )}
         </div>
       ))}
 
-      <p>Product Category:</p>
+      <p className="form-label">{t("addProduct.category")}</p>
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
+        className="select-category"
       >
-        <option value="">Select Category</option>
+        <option value="">{t("addProduct.selectCategory")}</option>
         {categoriesList.map((cat, index) => (
           <option key={index} value={cat.name}>
             {cat.name}
@@ -148,11 +165,11 @@ function AddProOne({
         ))}
       </select>
 
-      <button type="submit">Add Product</button>
+      <button type="submit" className="submit-btn">
+        {t("addProduct.submit")}
+      </button>
     </form>
   );
 }
 
 export default AddProOne;
-
-// 📁 AddProduct.jsx → سيتم توليده لاحقًا بناءً على الكومبوننتات دي

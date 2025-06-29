@@ -1,15 +1,31 @@
-// Components/About/AboutLa.jsx
-
-import React from "react";
-
+import React, { useEffect, useState } from "react";
+import "../Footer/Footer.css";
 
 const AboutLa = ({ sectionTitle, sectionContent, onClose }) => {
+  const [fadeClass, setFadeClass] = useState("fade-in-modal");
+
+  useEffect(() => {
+    return () => {
+      setFadeClass("fade-out-modal");
+    };
+  }, []);
+
+  const handleClose = () => {
+    setFadeClass("fade-out-modal");
+    setTimeout(() => {
+      onClose();
+    }, 300); // نفس مدة الأنيميشن
+  };
+
   return (
-    <div className="AboutLa" onClick={onClose}>
-      <div className="about-container" onClick={(e) => e.stopPropagation()}>
+    <div className="AboutLa" onClick={handleClose}>
+      <div
+        className={`about-container ${fadeClass}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           className="close-btn"
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="Close About Section"
         >
           ×

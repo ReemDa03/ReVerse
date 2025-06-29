@@ -4,14 +4,24 @@ import { useParams } from "react-router-dom";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import CategoryList from "./CategoryList";
+import { IoArrowBack } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
+import "./ProductList.css";
+import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next"; // ✅
 
 function ProductList() {
+
+  const { t } = useTranslation(); // ✅
+
   const { slug } = useParams();
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -60,11 +70,18 @@ function ProductList() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2 style={{ marginBottom: "10px" }}>Product List</h2>
+    <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.6, ease: "easeOut" }} className="product-list-container">
+      <button type="button" className="back-btn" onClick={() => navigate(-1)}>
+        <IoArrowBack className="back-icon" />
+       {t("orders.back")}
+      </button>
+      <h2 className="product-list-title">{t("products.title")}</h2>
 
-      <div style={{ marginBottom: "20px" }}>
-        <label style={{ marginRight: "10px" }}>Filter by Category:</label>
+      <div className="filter-container">
+        <label className="filter-label">{t("products.filterByCategory")}</label>
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -79,59 +96,29 @@ function ProductList() {
       </div>
 
       {filtered.length === 0 ? (
-        <p>No products found.</p>
+        <p>{t("products.noProducts")}</p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div className="product-cards-wrapper">
           {filtered.map((prod) => (
             <div
               key={prod.id}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                border: "1px solid #eee",
-                borderRadius: "8px",
-                padding: "10px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-              }}
+              className="product-card"
             >
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: isMobileView
-                    ? "1fr"
-                    : "80px 1fr 80px 150px 120px 50px",
-                  alignItems: "center",
-                  gap: "15px",
-                }}
+                className={`product-card-inner ${isMobileView ? "mobile" : ""}`}
               >
                 <img
                   src={prod.image}
                   alt={prod.name}
-                  style={{
-                    width: "70px",
-                    height: "70px",
-                    objectFit: "cover",
-                    borderRadius: "4px",
-                  }}
+                 className="product-image"
                 />
 
                 <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "4px",
-                  }}
+                  className="product-info"
                 >
                   <strong>{prod.name}</strong>
                   <span
-                    style={{
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      cursor: "pointer",
-                      color: "gray",
-                      fontSize: "13px",
-                    }}
+                    className="product-description-preview"
                     onClick={() => setExpandedId(prod.id)}
                   >
                     {getShortDescription(prod.description)}
@@ -142,7 +129,9 @@ function ProductList() {
 
                 <span>
                   {Array.isArray(prod.sizes)
-                    ? prod.sizes.map((s) => `${s.label} ($${s.price})`).join(", ")
+                    ? prod.sizes
+                        .map((s) => `${s.label} ($${s.price})`)
+                        .join(", ")
                     : "-"}
                 </span>
 
@@ -151,13 +140,7 @@ function ProductList() {
                 <div>
                   <button
                     onClick={() => setConfirmDeleteId(prod.id)}
-                    style={{
-                      background: "#eee",
-                      border: "1px solid #ccc",
-                      padding: "4px 10px",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
+                    className="delete-btn"
                   >
                     X
                   </button>
@@ -166,42 +149,21 @@ function ProductList() {
 
               {confirmDeleteId === prod.id && (
                 <div
-                  style={{
-                    marginTop: "10px",
-                    padding: "10px",
-                    background: "#fff4f4",
-                    border: "1px solid #ffcccc",
-                    borderRadius: "6px",
-                    display: "flex",
-                    gap: "10px",
-                    alignItems: "center",
-                  }}
+                   className="confirm-delete-box"
                 >
-                  <span style={{ fontSize: "12px" }}>
+                  <span className="delete-warning-text">
                     Are you sure you want to delete{" "}
                     <strong>"{prod.name}"</strong>?
                   </span>
                   <button
                     onClick={() => deleteProduct(prod.id)}
-                    style={{
-                      background: "red",
-                      color: "white",
-                      border: "none",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                    }}
+                    className="btn-delete-yes"
                   >
                     Yes
                   </button>
                   <button
                     onClick={() => setConfirmDeleteId(null)}
-                    style={{
-                      background: "gray",
-                      color: "white",
-                      border: "none",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                    }}
+                     className="btn-delete-no"
                   >
                     No
                   </button>
@@ -209,45 +171,24 @@ function ProductList() {
               )}
 
               {expandedId === prod.id && (
-                <div
-                  style={{
-                    marginTop: "10px",
-                    background: "#f9f9f9",
-                    padding: "10px",
-                    borderRadius: "6px",
-                    position: "relative",
-                  }}
-                >
-                  <strong>Full Description:</strong> {prod.description}
-                  <button
-                    onClick={() => setExpandedId(null)}
-                    style={{
-                      position: "absolute",
-                      top: "5px",
-                      right: "10px",
-                      border: "none",
-                      background: "transparent",
-                      fontWeight: "bold",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
+                <div className="overlay" onClick={() => setExpandedId(null)}>
+                  <div
+                    className="description-modal"
+                    onClick={(e) => e.stopPropagation()} // ما يسكر لما نكبس جوه المودال
                   >
-                    ×
-                  </button>
+                    <strong>{t("products.fullDescription")}</strong> {prod.description}
+                  </div>
                 </div>
               )}
             </div>
           ))}
         </div>
-
       )}
       {/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */}
-      <hr style={{ margin: "40px 0", borderColor: "#ddd" }} />
+      <hr className="divider-line" />
       <CategoryList />
       {/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */}
-
-    </div>
-    
+    </motion.div>
   );
 }
 
