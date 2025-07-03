@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./Cart.css";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
 const DeliveryForm = ({
@@ -14,26 +15,18 @@ const DeliveryForm = ({
   const modalRef = useRef(null);
   const [error, setError] = useState(false);
 
+  // ✅ إغلاق النموذج عند الضغط خارج المودال
   useEffect(() => {
-  document.body.style.overflow = "hidden";
-  return () => {
-    document.body.style.overflow = "auto";
-  };
-}, []);
-
-
-  useEffect(() => {
-  
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         setDineOption(null);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setDineOption]);
 
+  // ✅ التحقق من الحقول المطلوبة
   const handleProceed = () => {
     const { name, phone, address } = customerInfo;
     if (!name || !phone || !address) {
@@ -46,9 +39,14 @@ const DeliveryForm = ({
 
   return (
     <div className="modal-overlay">
-      <div
+      <motion.div
+        key="delivery-modal"
         ref={modalRef}
-        className="modal-content delivery-modal fade-in-modal"
+        className="modal-content delivery-modal"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.3 }}
       >
         <h3 className="modal-title">{t("delivery.title")}</h3>
 
@@ -93,12 +91,14 @@ const DeliveryForm = ({
           className="order-notes-input"
         />
 
-        {error && <p className="error-text">{t("delivery.errorMsg")}</p>}
+        {error && (
+          <p className="error-text">{t("delivery.errorMsg")}</p>
+        )}
 
         <button className="confirm-btn" onClick={handleProceed}>
           {t("delivery.proceedBtn")}
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 };

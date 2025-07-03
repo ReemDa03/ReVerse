@@ -304,13 +304,13 @@ function AddProduct() {
         />
       </div>
 
-      {/*<div id="add-special-section">
+      <div id="add-special-section">
         {planType === "premium" ? (
           <AddSpecial slug={slug} />
         ) : (
           <UpgradeNotice slug={slug} />
         )}
-      </div>*/}
+      </div>
     </motion.div>
   );
 }

@@ -271,7 +271,138 @@
     "priceLabel": "Price",
     "viewMore": "View More ▼",
     "viewLess": "View Less ▲"
+  },
+
+  "navbarMe": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "clients": "Our Clients",
+    "getStarted": "Get Started Now"
+  },
+
+  "heroMe": {
+    "title": "Smart Online Ordering System for Restaurants and Cafés",
+    "subtitle": "Provide a branded experience for your customers with a custom online ordering and reservation website.",
+    "button": "Get Started Now"
+  },
+  "features": {
+    "title1": "What is ReVerse?",
+    "description": "ReVerse is a web-based platform designed for restaurants and cafés, offering customer online ordering and reservation websites. It allows businesses to create a unique brand identity online, manage orders and reservations efficiently through an intuitive admin panel, and enhance customer experience with seamless online interaction.",
+    "title2": "Everything you need to run your restaurant online",
+    "cards": [
+      {
+        "title": "Custom Branding",
+        "description": "Create a unique online experience that reflects your brand’s identity."
+      },
+      {
+        "title": "Online Order Management",
+        "description": "Manage incoming orders in real-time with instant admin notifications."
+      },
+      {
+        "title": "Booking & Reservations",
+        "description": "Streamline your reservation process with an integrated booking module."
+      },
+      {
+        "title": "Products & Categories Control",
+        "description": "Easily organize and update your menu with product and category management."
+      },
+      {
+        "title": "Admin Dashboard with Secure Login",
+        "description": "Access a secure admin dashboard with Firebase authentication."
+      },
+      {
+        "title": "Multilingual Support",
+        "description": "Support both English and Arabic to serve a wider customer base."
+      },
+      {
+        "title": "Web-Hosted",
+        "description": "Your website is hosted online — no need for a separate app."
+      },
+      {
+        "title": "Fast 24h Delivery",
+        "description": "Get your custom platform up and running within 24 hours."
+      }
+    ]
+  },
+
+  "pricing": {
+    "title": "Pricing that fits your business",
+    "month": "month",
+    "startNow": "Start Now",
+    "cta": "Try ReVerse for 1 week — absolutely free. \nIf you like it, subscribe anytime!",
+    "plans": {
+      "basic": {
+        "title": "Basic",
+        "price": "$25",
+        "features": [
+          "Online ordering website",
+          "Unlimited orders",
+          "Mobile-friendly design"
+        ]
+      },
+      "pro": {
+        "title": "Premium",
+        "price": "$50",
+        "features": [
+          "Highlight top 3 dishes/drinks",
+          "Online payments via Stripe",
+          "Everything in Basic"
+        ]
+      },
+      "vip": {
+        "title": "VIP Custom",
+        "price": "VIP",
+        "features": [
+          "Custom-built full website",
+          "Dedicated account manager",
+          "Full ownership & code"
+        ]
+      }
+    }
+  },
+
+  "clients": {
+    "title": "Our Clients",
+    "description": "Explore real examples of restaurants and cafes already using ReVerse to power their online ordering and reservations.",
+    "cta": "Get Started Now",
+    "viewMore": "All Clients",
+    "hide": "Hide Clients"
+  },
+
+  "footerMe": {
+    "title": "Why choose ReVerse?",
+    "description": "We provide comprehensive solutions for restaurants and cafés looking to establish a strong online presence.",
+    "features": {
+      "fast": {
+        "title": "Fast Setup",
+        "desc": "Get your website up and running in no time with our intuitive platform."
+      },
+      "pricing": {
+        "title": "Affordable Pricing",
+        "desc": "Competitive pricing plans to fit businesses of all sizes."
+      },
+      "ui": {
+        "title": "Professional UI",
+        "desc": "Modern and customizable templates to showcase your brand."
+      },
+      "responsive": {
+        "title": "Responsive Design",
+        "desc": "Websites that look great on any device — from desktop to smartphone."
+      },
+      "support": {
+        "title": "Dedicated Support",
+        "desc": "Our team is here to assist you every step of the way."
+      }
+    },
+    "cta": {
+      "title": "Ready to boost your business?",
+      "description": "Contact us today to get your own Website live in 24h. ReVerse can help your restaurant thrive.",
+      "button": "Contact Us"
+    },
+    "copyright": "All rights reserved."
   }
+
+
   
 
 

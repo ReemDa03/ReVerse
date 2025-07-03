@@ -13,4 +13,8 @@ html, body {
   padding: 0;
   overflow-x: hidden; /* يمنع الفراغ من اليمين */
   
+  scroll-behavior: smooth;
+
+
+  
 }
