@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './PricingSection.css';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 const PricingSection = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -19,18 +21,38 @@ const PricingSection = () => {
     return `https://wa.me/201024208807?text=${encodeURIComponent(message)}`;
   };
 
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
+  });
+
   return (
-    <section className="pricing-section" id="pricing">
-      <div className="section-title">
+    <motion.section
+      className="pricing-section"
+      id="pricing"
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6 }}
+    >
+      <motion.div
+        className="section-title"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5 }}
+      >
         <h2>{t("pricing.title")}</h2>
-      </div>
+      </motion.div>
 
       <div className="pricing-grid">
-        {["basic", "pro", "vip"].map((planKey) => (
-          <div
+        {["basic", "pro", "vip"].map((planKey, index) => (
+          <motion.div
             key={planKey}
             className={`pricing-card ${selectedPlan === planKey ? 'active' : ''}`}
             onClick={() => handlePlanClick(planKey)}
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.2 + index * 0.2 }}
           >
             <h3>{t(`pricing.plans.${planKey}.title`)}</h3>
             <p className="price">
@@ -53,14 +75,19 @@ const PricingSection = () => {
                 )
               )}
             </ul>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      <p className="cta-text">
+      <motion.p
+        className="cta-text"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5, delay: 1 }}
+      >
         {t("pricing.cta")}
-      </p>
-    </section>
+      </motion.p>
+    </motion.section>
   );
 };
 

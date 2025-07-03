@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './ClientsSection.css';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 const clients = [
   {
@@ -28,38 +30,70 @@ const clients = [
 const ClientsSection = () => {
   const [showAll, setShowAll] = useState(false);
   const { t } = useTranslation();
-
   const visibleClients = showAll ? clients : clients.slice(0, 2);
 
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.2
+  });
+
   return (
-    <section className="clients-section" id="clients">
-      <h2 className="clients-title">{t("clients.title")}</h2>
-      <p className="clients-subtext">
+    <motion.section
+      className="clients-section"
+      id="clients"
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6 }}
+    >
+      <motion.h2
+        className="clients-title"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5 }}
+      >
+        {t("clients.title")}
+      </motion.h2>
+
+      <motion.p
+        className="clients-subtext"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         {t("clients.description")}
-      </p>
+      </motion.p>
 
       <div className={`clients-scroll ${!showAll ? 'centered-scroll' : ''}`}>
         {visibleClients.map((client, index) => (
-          <a
+          <motion.a
             key={index}
             href={client.link}
             className="client-card"
             target="_blank"
             rel="noopener noreferrer"
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
           >
             <img src={client.image} alt={client.name} />
             <p>{client.name}</p>
-          </a>
+          </motion.a>
         ))}
       </div>
 
-      <div className="clients-buttons">
+      <motion.div
+        className="clients-buttons"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5, delay: 0.5 }}
+      >
         <a href="#pricing" className="btn-orange">{t("clients.cta")}</a>
         <button className="btn-outline" onClick={() => setShowAll(!showAll)}>
           {showAll ? t("clients.hide") : t("clients.viewMore")}
         </button>
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 };
 

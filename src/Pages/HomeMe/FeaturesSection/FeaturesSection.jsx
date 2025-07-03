@@ -10,6 +10,8 @@ import {
   FaCloud,
   FaBolt
 } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 import "./FeaturesSection.css";
 
 const FeaturesSection = () => {
@@ -58,20 +60,37 @@ const FeaturesSection = () => {
     }
   ];
 
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.2
+  });
+
   return (
-    <section className="features-section" id="features">
-      <div className="features-header">
+    <section className="features-section" id="features" ref={ref}>
+      <motion.div
+        className="features-header"
+        initial={{ opacity: 0, y: 30 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.6 }}
+      >
         <h2>{t("features.title1")}</h2>
         <p>{t("features.description")}</p>
         <h2>{t("features.title2")}</h2>
-      </div>
+      </motion.div>
+
       <div className="features-grid">
         {features.map((feature, index) => (
-          <div key={index} className="feature-card">
+          <motion.div
+            key={index}
+            className="feature-card"
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
             <div className="icon">{feature.icon}</div>
             <h3>{feature.title}</h3>
             <p>{feature.description}</p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

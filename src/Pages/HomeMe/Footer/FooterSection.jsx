@@ -11,6 +11,8 @@ import {
 } from "react-icons/fa";
 import "./FooterSection.css";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 
 const FooterSection = () => {
   const { t } = useTranslation();
@@ -43,22 +45,60 @@ const FooterSection = () => {
     },
   ];
 
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
+  });
+
   return (
-    <footer className="footer-section">
-      <h2 className="footer-title">{t("footerMe.title")}</h2>
-      <p className="footer-subtext">{t("footerMe.description")}</p>
+    <motion.footer
+      className="footer-section"
+      ref={ref}
+      initial={{ opacity: 0, y: 40 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.8 }}
+    >
+      <motion.h2
+        className="footer-title"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5 }}
+      >
+        {t("footerMe.title")}
+      </motion.h2>
+
+      <motion.p
+        className="footer-subtext"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        {t("footerMe.description")}
+      </motion.p>
 
       <div className="footer-grid">
         {footerFeatures.map((feature, index) => (
-          <div key={index} className="footer-card">
+          <motion.div
+            key={index}
+            className="footer-card"
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.3 + index * 0.15 }}
+          >
             <div className="icon">{feature.icon}</div>
             <h3>{feature.title}</h3>
             <p>{feature.description}</p>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      <div className="footer-cta" id="get-started">
+      <motion.div
+        className="footer-cta"
+        id="get-started"
+        initial={{ opacity: 0, y: 30 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.6, delay: 1 }}
+      >
         <h3>{t("footerMe.cta.title")}</h3>
         <p>{t("footerMe.cta.description")}</p>
         <a
@@ -69,9 +109,14 @@ const FooterSection = () => {
         >
           {t("footerMe.cta.button")}
         </a>
-      </div>
+      </motion.div>
 
-      <div className="footer-icons">
+      <motion.div
+        className="footer-icons"
+        initial={{ opacity: 0, y: 10 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5, delay: 1.2 }}
+      >
         <a href="https://wa.me/201024208807" target="_blank" rel="noopener noreferrer">
           <FaWhatsapp />
         </a>
@@ -81,12 +126,17 @@ const FooterSection = () => {
         <a href="mailto:reemdarwish07@gmail.com">
           <FaEnvelope />
         </a>
-      </div>
+      </motion.div>
 
-      <p className="footer-copy">
+      <motion.p
+        className="footer-copy"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5, delay: 1.3 }}
+      >
         &copy; {new Date().getFullYear()} ReVerse. {t("footerMe.copyright")}
-      </p>
-    </footer>
+      </motion.p>
+    </motion.footer>
   );
 };
 

@@ -1,9 +1,10 @@
 /* HeroMe.css */
 
 .hero-me {
-  background-image: url("https://res.cloudinary.com/dwupyymoc/image/upload/f_auto,q_auto,w_1920/v1751501428/restaurant_hero_1920x960_vvvpgo.jpg");
+  background-image: url("https://res.cloudinary.com/dwupyymoc/image/upload/f_auto,q_auto,w_1920,c_fill/v1751501428/restaurant_hero_1920x960_vvvpgo.jpg");
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   height: 100vh;
   position: relative;
   display: flex;
@@ -12,6 +13,8 @@
   text-align: center;
   padding: 0 20px;
   color: white;
+  overflow: hidden;
+  will-change: transform, opacity; /* boost GPU rendering */
 }
 
 .hero-me::after {
