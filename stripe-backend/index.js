@@ -2,50 +2,66 @@ const express = require("express");
 const cors = require("cors");
 const stripeLib = require("stripe");
 const admin = require("firebase-admin");
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
 
 const app = express();
-app.use(cors());
+
+// ✅ CORS options
+const corsOptions = {
+  origin: ["http://localhost:5175", "https://rreverse.netlify.app"],
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"],
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// Initialize Firebase Admin SDK
-const serviceAccount = require("./serviceAccountKey.json"); // ← حمليها من Firebase Console
+// ✅ Firebase Admin Init
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 const db = admin.firestore();
 
-app.post("/create-checkout-session", async (req, res) => {
-  const { total, currency = "usd", slug } = req.body;
+// ✅ Route للفحص
+app.get("/", (req, res) => {
+  res.send("✅ Stripe server is running");
+});
 
-  if (!slug) return res.status(400).json({ error: "Missing slug" });
+// ✅ Stripe Checkout API
+app.post("/create-checkout-session", async (req, res) => {
+  const { total, currency, slug } = req.body;
+
+  if (!total || isNaN(total)) {
+    return res.status(400).json({ error: "Invalid total amount" });
+  }
+
+  if (!slug) {
+    return res.status(400).json({ error: "Missing restaurant slug" });
+  }
 
   try {
-    // 1. Get settings from Firestore
     const docRef = db.collection("ReVerse").doc(slug);
     const docSnap = await docRef.get();
 
     if (!docSnap.exists) {
-      return res.status(404).json({ error: "Store not found" });
+      return res.status(404).json({ error: "Restaurant not found" });
     }
 
     const data = docSnap.data();
-    const stripeSecretKey = data.stripeSecretKey;
-    const successUrl = data.success_url || "https://rreverse.netlify.app/success";
-    const cancelUrl = data.cancel_url || "https://rreverse.netlify.app/cancel";
+    const { stripeSecretKey, success_url, cancel_url, currency: docCurrency } = data;
 
-    if (!stripeSecretKey) {
-      return res.status(500).json({ error: "Stripe Secret Key missing" });
+    if (!stripeSecretKey || !success_url || !cancel_url) {
+      return res.status(400).json({ error: "Missing Stripe or redirect info" });
     }
 
     const stripe = stripeLib(stripeSecretKey);
 
-    // 2. Create Stripe session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
-            currency,
+            currency: currency || docCurrency || "usd",
             product_data: { name: "Order Total" },
             unit_amount: total * 100,
           },
@@ -53,15 +69,19 @@ app.post("/create-checkout-session", async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      success_url,
+      cancel_url,
     });
 
-    return res.status(200).json({ id: session.id });
-  } catch (err) {
-    console.error("Stripe error", err);
-    return res.status(500).json({ error: err.message });
+    res.status(200).json({ id: session.id });
+  } catch (error) {
+    console.error("Stripe Error:", error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 
-app.listen(5000, () => console.log("✅ Server running at http://localhost:5000"));
+// ✅ Start server
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`🚀 Stripe server running on port ${PORT}`);
+});
