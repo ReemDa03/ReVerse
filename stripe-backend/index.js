@@ -2,11 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const stripeLib = require("stripe");
 const admin = require("firebase-admin");
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+const serviceAccount = require("./serviceAccountKey.json"); // ✅ غيّري للمسار الصحيح لملف الخدمة
 
 const app = express();
 
-// ✅ CORS options المعدلة
+// ✅ إعدادات CORS
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
@@ -20,13 +20,13 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ["GET", "POST", "OPTIONS"], // أضفنا OPTIONS
-  allowedHeaders: ["Content-Type", "Authorization"], // أضفنا Authorization تحسبًا
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // ✅ ضروري للـ preflight requests
+app.options("*", cors(corsOptions));
 app.use(express.json());
 
 // ✅ Firebase Admin Init
@@ -35,7 +35,7 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
-// ✅ Route للفحص
+// ✅ فحص السيرفر
 app.get("/", (req, res) => {
   res.send("✅ Stripe server is running");
 });
@@ -93,7 +93,7 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-// ✅ Start server
+// ✅ تشغيل السيرفر
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Stripe server running on port ${PORT}`);

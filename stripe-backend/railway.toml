@@ -1,2 +1,5 @@
 [build]
-ignoreBuild = true
+builder = "NIXPACKS"
+
+[start]
+cmd = "node index.js"
