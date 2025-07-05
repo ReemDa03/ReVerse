@@ -5,7 +5,8 @@ const { getFirestore } = require("firebase-admin/firestore");
 
 const app = express();
 const corsOptions = {
-  origin: "*", // مؤقتًا اسمحي لكل شيء. لاحقًا ممكن نحدده بدقة
+  origin: ["http://localhost:5175", "https://rreverse.netlify.app/"]
+, // مؤقتًا اسمحي لكل شيء. لاحقًا ممكن نحدده بدقة
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type"],
 };
