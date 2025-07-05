@@ -5,27 +5,33 @@ const { getFirestore } = require("firebase-admin/firestore");
 
 const app = express();
 const corsOptions = {
-  origin: ["http://localhost:5175", "https://rreverse.netlify.app/"]
-, // مؤقتًا اسمحي لكل شيء. لاحقًا ممكن نحدده بدقة
+  origin: ["http://localhost:5175", "https://rreverse.netlify.app"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type"],
 };
 
 app.use(cors(corsOptions));
-
 app.use(express.json());
 
-// ✅ 1. Firebase Admin Init
+// ✅ Route للفحص
+app.get("/", (req, res) => {
+  res.send("Stripe server is working ✅");
+});
+
+// ✅ Firebase Admin Init
 initializeApp({
-  credential: applicationDefault(), // أو serviceAccount لو عندك ملف
+  credential: applicationDefault(),
 });
 const db = getFirestore();
 
 app.post("/create-checkout-session", async (req, res) => {
   const { total, currency, slug } = req.body;
 
+  if (!total || isNaN(total)) {
+    return res.status(400).json({ error: "Invalid total amount" });
+  }
+
   try {
-    // ✅ 2. جلب بيانات المطعم من Firestore
     const docRef = db.collection("ReVerse").doc(slug);
     const docSnap = await docRef.get();
 
@@ -34,12 +40,7 @@ app.post("/create-checkout-session", async (req, res) => {
     }
 
     const data = docSnap.data();
-    const {
-      stripeSecretKey,
-      success_url,
-      cancel_url,
-      currency: docCurrency
-    } = data;
+    const { stripeSecretKey, success_url, cancel_url, currency: docCurrency } = data;
 
     if (!stripeSecretKey || !success_url || !cancel_url) {
       return res.status(400).json({ error: "Missing Stripe or redirect info" });
@@ -47,7 +48,6 @@ app.post("/create-checkout-session", async (req, res) => {
 
     const stripe = require("stripe")(stripeSecretKey);
 
-    // ✅ 3. إنشاء جلسة الدفع
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
