@@ -9,13 +9,23 @@ const app = express();
 
 // ✅ CORS options
 const corsOptions = {
-  origin: [
-     "http://localhost:5173",
-    "http://localhost:5175", 
-    "https://rreverse.netlify.app"],
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:5175",
+      "https://rreverse.netlify.app",
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"],
+  credentials: true,
 };
+
 app.use(cors(corsOptions));
 app.use(express.json());
 
