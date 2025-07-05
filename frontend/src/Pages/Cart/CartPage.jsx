@@ -49,7 +49,7 @@ const CartPage = () => {
       return;
     }
 
-    const res = await axios.post("http://localhost:5000/create-checkout-session", {
+    const res = await axios.post("https://reverse-production.up.railway.app/create-checkout-session", {
       total: total,
       currency: restaurantData.currency || "usd", // حسب العملة من Firestore
       slug: slug, // نبعته عشان السيرفر يجيب بياناته لحاله
