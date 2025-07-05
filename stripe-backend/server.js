@@ -4,7 +4,14 @@ const { initializeApp, applicationDefault } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
 const app = express();
-app.use(cors({ origin: "*" })); // مؤقتًا، بس لاحقًا بنحط رابط فرونت فقط
+const corsOptions = {
+  origin: "*", // مؤقتًا اسمحي لكل شيء. لاحقًا ممكن نحدده بدقة
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"],
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // ✅ 1. Firebase Admin Init
