@@ -18,7 +18,7 @@ app.post("/create-checkout-session", async (req, res) => {
 
   try {
     // ✅ 2. جلب بيانات المطعم من Firestore
-    const docRef = db.collection("restaurants").doc(slug);
+    const docRef = db.collection("ReVerse").doc(slug);
     const docSnap = await docRef.get();
 
     if (!docSnap.exists) {
