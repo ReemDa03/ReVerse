@@ -15,5 +15,8 @@
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
     "stripe": "^18.3.0"
+  },
+  "devDependencies": {
+    "rollup": "^4.44.2"
   }
 }

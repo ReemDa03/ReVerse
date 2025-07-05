@@ -4,10 +4,9 @@ const stripeLib = require("stripe");
 const admin = require("firebase-admin");
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-
 const app = express();
 
-// ✅ CORS options
+// ✅ CORS options المعدلة
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
@@ -21,12 +20,13 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"],
+  methods: ["GET", "POST", "OPTIONS"], // أضفنا OPTIONS
+  allowedHeaders: ["Content-Type", "Authorization"], // أضفنا Authorization تحسبًا
   credentials: true,
 };
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // ✅ ضروري للـ preflight requests
 app.use(express.json());
 
 // ✅ Firebase Admin Init
